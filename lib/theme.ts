@@ -2,56 +2,92 @@ import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 
 export const THEME = {
   light: {
+    // Base colors
     background: 'hsl(0 0% 100%)',
-    foreground: 'hsl(0 0% 3.9%)',
+    foreground: 'hsl(224 30% 15%)',
     card: 'hsl(0 0% 100%)',
-    cardForeground: 'hsl(0 0% 3.9%)',
+    cardForeground: 'hsl(224 30% 15%)',
     popover: 'hsl(0 0% 100%)',
-    popoverForeground: 'hsl(0 0% 3.9%)',
-    primary: 'hsl(0 0% 9%)',
-    primaryForeground: 'hsl(0 0% 98%)',
-    secondary: 'hsl(0 0% 96.1%)',
-    secondaryForeground: 'hsl(0 0% 9%)',
-    muted: 'hsl(0 0% 96.1%)',
-    mutedForeground: 'hsl(0 0% 45.1%)',
-    accent: 'hsl(0 0% 96.1%)',
-    accentForeground: 'hsl(0 0% 9%)',
-    destructive: 'hsl(0 84.2% 60.2%)',
-    border: 'hsl(0 0% 89.8%)',
-    input: 'hsl(0 0% 89.8%)',
-    ring: 'hsl(0 0% 63%)',
-    radius: '0.625rem',
-    chart1: 'hsl(12 76% 61%)',
-    chart2: 'hsl(173 58% 39%)',
-    chart3: 'hsl(197 37% 24%)',
-    chart4: 'hsl(43 74% 66%)',
-    chart5: 'hsl(27 87% 67%)',
+    popoverForeground: 'hsl(224 30% 15%)',
+    
+    // Primary (Medical Blue)
+    primary: 'hsl(210 100% 40%)',
+    primaryForeground: 'hsl(0 0% 100%)',
+    primaryLight: 'hsl(210 100% 95%)',
+    
+    // Secondary (Wellness Green)
+    secondary: 'hsl(156 80% 35%)',
+    secondaryForeground: 'hsl(0 0% 100%)',
+    secondaryLight: 'hsl(156 80% 95%)',
+    
+    // Accent (Neutral Grays)
+    accent: 'hsl(220 20% 97%)',
+    accentForeground: 'hsl(220 10% 46%)',
+    
+    // Status colors
+    success: 'hsl(156 80% 35%)',
+    warning: 'hsl(30 100% 50%)',
+    danger: 'hsl(0 84% 60%)',
+    info: 'hsl(210 100% 50%)',
+    
+    // UI elements
+    muted: 'hsl(220 20% 97%)',
+    mutedForeground: 'hsl(220 10% 46%)',
+    border: 'hsl(220 20% 90%)',
+    input: 'hsl(220 20% 95%)',
+    ring: 'hsl(210 100% 40%)',
+    radius: '0.5rem',
+    
+    // Additional colors
+    chart1: 'hsl(210 100% 50%)',
+    chart2: 'hsl(156 80% 35%)',
+    chart3: 'hsl(30 100% 50%)',
+    chart4: 'hsl(0 84% 60%)',
+    chart5: 'hsl(270 80% 60%)',
   },
   dark: {
-    background: 'hsl(0 0% 3.9%)',
+    // Base colors
+    background: 'hsl(224 30% 10%)',
     foreground: 'hsl(0 0% 98%)',
-    card: 'hsl(0 0% 3.9%)',
+    card: 'hsl(224 30% 12%)',
     cardForeground: 'hsl(0 0% 98%)',
-    popover: 'hsl(0 0% 3.9%)',
+    popover: 'hsl(224 30% 12%)',
     popoverForeground: 'hsl(0 0% 98%)',
-    primary: 'hsl(0 0% 98%)',
-    primaryForeground: 'hsl(0 0% 9%)',
-    secondary: 'hsl(0 0% 14.9%)',
+    
+    // Primary (Medical Blue)
+    primary: 'hsl(210 100% 50%)',
+    primaryForeground: 'hsl(0 0% 98%)',
+    primaryLight: 'hsl(210 100% 20%)',
+    
+    // Secondary (Wellness Green)
+    secondary: 'hsl(156 80% 40%)',
     secondaryForeground: 'hsl(0 0% 98%)',
-    muted: 'hsl(0 0% 14.9%)',
-    mutedForeground: 'hsl(0 0% 63.9%)',
-    accent: 'hsl(0 0% 14.9%)',
-    accentForeground: 'hsl(0 0% 98%)',
-    destructive: 'hsl(0 70.9% 59.4%)',
-    border: 'hsl(0 0% 14.9%)',
-    input: 'hsl(0 0% 14.9%)',
-    ring: 'hsl(300 0% 45%)',
-    radius: '0.625rem',
-    chart1: 'hsl(220 70% 50%)',
-    chart2: 'hsl(160 60% 45%)',
-    chart3: 'hsl(30 80% 55%)',
-    chart4: 'hsl(280 65% 60%)',
-    chart5: 'hsl(340 75% 55%)',
+    secondaryLight: 'hsl(156 80% 15%)',
+    
+    // Accent (Neutral Grays)
+    accent: 'hsl(220 20% 18%)',
+    accentForeground: 'hsl(220 10% 80%)',
+    
+    // Status colors
+    success: 'hsl(156 80% 40%)',
+    warning: 'hsl(30 100% 55%)',
+    danger: 'hsl(0 84% 65%)',
+    info: 'hsl(210 100% 55%)',
+    
+    // UI elements
+    muted: 'hsl(220 20% 18%)',
+    mutedForeground: 'hsl(220 10% 70%)',
+    border: 'hsl(220 20% 25%)',
+    input: 'hsl(220 20% 22%)',
+    ring: 'hsl(210 100% 50%)',
+    radius: '0.5rem',
+    
+    // Additional colors
+    chart1: 'hsl(210 100% 55%)',
+    chart2: 'hsl(156 80% 45%)',
+    chart3: 'hsl(30 100% 55%)',
+    chart4: 'hsl(0 84% 65%)',
+    chart5: 'hsl(270 80% 65%)',
   },
 };
 
@@ -62,7 +98,7 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
       background: THEME.light.background,
       border: THEME.light.border,
       card: THEME.light.card,
-      notification: THEME.light.destructive,
+      notification: THEME.light.danger,
       primary: THEME.light.primary,
       text: THEME.light.foreground,
     },
@@ -73,9 +109,41 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
       background: THEME.dark.background,
       border: THEME.dark.border,
       card: THEME.dark.card,
-      notification: THEME.dark.destructive,
+      notification: THEME.dark.danger,
       primary: THEME.dark.primary,
       text: THEME.dark.foreground,
     },
+  },
+};
+
+// Export color scales for easy access
+export const colors = {
+  primary: {
+    light: THEME.light.primaryLight,
+    main: THEME.light.primary,
+    dark: THEME.dark.primary,
+    contrastText: THEME.light.primaryForeground,
+  },
+  secondary: {
+    light: THEME.light.secondaryLight,
+    main: THEME.light.secondary,
+    dark: THEME.dark.secondary,
+    contrastText: THEME.light.secondaryForeground,
+  },
+  status: {
+    success: THEME.light.success,
+    warning: THEME.light.warning,
+    danger: THEME.light.danger,
+    info: THEME.light.info,
+  },
+  text: {
+    light: THEME.light.mutedForeground,
+    default: THEME.light.foreground,
+    dark: THEME.dark.foreground,
+  },
+  background: {
+    light: THEME.light.background,
+    default: THEME.light.background,
+    dark: THEME.dark.background,
   },
 };
