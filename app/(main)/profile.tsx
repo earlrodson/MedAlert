@@ -1,8 +1,27 @@
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
+import React from 'react';
 
 export default function ProfileScreen() {
+    const { isSignedIn, isLoaded } = useAuth();
+    const router = useRouter();
+
+    React.useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            router.replace('/(auth)/sign-in');
+        }
+    }, [isLoaded, isSignedIn, router]);
+
+    if (!isLoaded || !isSignedIn) {
+        return (
+            <SafeAreaView className="flex-1 bg-background items-center justify-center">
+                <ActivityIndicator size="large" />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView className="flex-1 bg-background">
             <Stack.Screen

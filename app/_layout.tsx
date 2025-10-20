@@ -6,6 +6,7 @@ import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
+import { HeaderLeft } from '@/components/header-left';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
@@ -47,27 +48,20 @@ function Routes() {
 
     return (
         <Stack>
-            {/* Screens only shown when the user is NOT signed in */}
-            <Stack.Protected guard={!isSignedIn}>
-                <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
-                <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
-                <Stack.Screen name="(auth)/reset-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
-                <Stack.Screen name="(auth)/forgot-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
-            </Stack.Protected>
-
-            {/* Screens only shown when the user IS signed in */}
-            <Stack.Protected guard={isSignedIn}>
-                <Stack.Screen name="(main)" options={{ headerShown: false }} />
-            </Stack.Protected>
-
-            {/* Screens outside the guards are accessible to everyone (e.g. not found) */}
+            <Stack.Screen name="(main)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
+            <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
+            <Stack.Screen name="(auth)/reset-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
+            <Stack.Screen name="(auth)/forgot-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
         </Stack>
     );
 }
 
 const SIGN_IN_SCREEN_OPTIONS = {
-    headerShown: false,
-    title: 'Sign in',
+    title: '',
+    headerShadowVisible: false,
+    headerTransparent: true,
+    headerLeft: () => <HeaderLeft />, // Use a function to render the component
 };
 
 const SIGN_UP_SCREEN_OPTIONS = {
