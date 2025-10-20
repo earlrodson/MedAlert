@@ -3,12 +3,17 @@ import { MedicationOverview } from '@/components/medication-overview';
 import { QuickActions } from '@/components/quick-actions';
 import { UpcomingReminders, type Medication } from '@/components/upcoming-reminders';
 import { WelcomeSection } from '@/components/welcome-section';
+import { CurrentMedications } from '@/components/current-medications';
 import { initDatabase, getTodayMedications, type MedicationRecord } from '@/lib/database';
+import { Text } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
+import React from 'react';
 import { Stack } from 'expo-router';
-import * as React from 'react';
 import { ScrollView, ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from '@/components/ui/text';
+import { THEME } from '@/lib/theme';
+import { BottomNavigation } from '@/components/bottom-navigation';
+import { useColorScheme } from 'nativewind';
 
 const SCREEN_OPTIONS = {
     header: () => <AppHeader />,
@@ -23,15 +28,26 @@ const formatTime = (time24: string): string => {
 };
 
 export default function Screen() {
+    const { colorScheme } = useColorScheme();
     const [medications, setMedications] = React.useState<Medication[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+
+    const handleMedicationTaken = React.useCallback((medicationId: string) => {
+        setMedications(prev =>
+            prev.map(med =>
+                med.id === medicationId
+                    ? { ...med, taken: true }
+                    : med
+            )
+        );
+    }, []);
 
     const loadMedications = React.useCallback(async () => {
         try {
             setIsLoading(true);
             const dbMedications = await getTodayMedications();
-            
+
             // Convert database records to component format
             const formattedMedications: Medication[] = dbMedications.map((med) => ({
                 id: med.id!.toString(),
@@ -40,7 +56,7 @@ export default function Screen() {
                 time: formatTime(med.time),
                 taken: false, // TODO: Track medication taken status separately
             }));
-            
+
             setMedications(formattedMedications);
             setError(null);
         } catch (err) {
@@ -74,7 +90,6 @@ export default function Screen() {
             </SafeAreaView>
         );
     }
-
     if (error) {
         return (
             <SafeAreaView className="flex-1 bg-background items-center justify-center p-4">
@@ -90,16 +105,22 @@ export default function Screen() {
     return (
         <SafeAreaView className="flex-1 bg-background">
             <Stack.Screen options={SCREEN_OPTIONS} />
-            <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 }}>
-                <WelcomeSection />
-                <MedicationOverview 
-                    activeCount={activeCount} 
-                    dueNowCount={dueNowCount} 
-                    upcomingCount={upcomingCount} 
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24 }}>
+                <View className={cn('rounded-lg p-4 mb-4')} style={{ backgroundColor: colorScheme === 'dark' ? THEME.dark.primary : THEME.light.primary }}>
+                    <WelcomeSection />
+                    <MedicationOverview
+                        activeCount={activeCount}
+                        dueNowCount={dueNowCount}
+                        upcomingCount={upcomingCount}
+                    />
+                </View>
+                <CurrentMedications
+                    medications={medications}
+                    onMedicationTaken={handleMedicationTaken}
                 />
-                <QuickActions onMedicationAdded={loadMedications} />
                 <UpcomingReminders medications={medications} />
             </ScrollView>
+            <BottomNavigation />
         </SafeAreaView>
     );
 }

@@ -7,7 +7,7 @@ import { colors } from '@/lib/theme';
 
 export function AppHeader() {
     return (
-        <View className="bg-background px-4 py-2">
+        <View className="bg-background p-4">
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                     <Pill size={32} color={colors.primary.main} />
