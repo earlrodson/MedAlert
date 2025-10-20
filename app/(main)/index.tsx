@@ -12,7 +12,6 @@ import { Stack } from 'expo-router';
 import { ScrollView, ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { THEME } from '@/lib/theme';
-import { BottomNavigation } from '@/components/bottom-navigation';
 import { useColorScheme } from 'nativewind';
 
 const SCREEN_OPTIONS = {
@@ -120,7 +119,6 @@ export default function Screen() {
                 />
                 <UpcomingReminders medications={medications} />
             </ScrollView>
-            <BottomNavigation />
         </SafeAreaView>
     );
 }

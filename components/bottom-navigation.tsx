@@ -5,8 +5,9 @@ import { useColorScheme } from 'nativewind';
 import { THEME } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import { useRouter, usePathname } from 'expo-router';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-export function BottomNavigation() {
+export function BottomNavigation({ ...props }: BottomTabBarProps) {
     const { colorScheme } = useColorScheme();
     const router = useRouter();
     const pathname = usePathname();
