@@ -6,6 +6,7 @@ import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { HeaderLeft } from '@/components/header-left';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -46,9 +47,26 @@ function Routes() {
         return null;
     }
 
+    // Screen options are now defined inline
+
+    const stackScreenOptions: NativeStackNavigationOptions = {
+        headerShown: false,
+        animation: 'slide_from_right',
+        animationDuration: 200,
+        presentation: 'card',
+    };
+
     return (
-        <Stack>
+        <Stack screenOptions={stackScreenOptions}>
             <Stack.Screen name="(main)" options={{ headerShown: false }} />
+            <Stack.Screen 
+                name="daily-schedule" 
+                options={{
+                    headerShown: false,
+                    animation: 'slide_from_right',
+                    presentation: 'card',
+                }} 
+            />
             <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
             <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
             <Stack.Screen name="(auth)/reset-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
@@ -57,21 +75,21 @@ function Routes() {
     );
 }
 
-const SIGN_IN_SCREEN_OPTIONS = {
+const SIGN_IN_SCREEN_OPTIONS: NativeStackNavigationOptions = {
     title: '',
     headerShadowVisible: false,
     headerTransparent: true,
-    headerLeft: () => <HeaderLeft />, // Use a function to render the component
+    headerLeft: () => <HeaderLeft />,
 };
 
-const SIGN_UP_SCREEN_OPTIONS = {
+const SIGN_UP_SCREEN_OPTIONS: NativeStackNavigationOptions = {
     presentation: 'modal',
     title: '',
     headerTransparent: true,
     gestureEnabled: false,
-} as const;
+};
 
-const DEFAULT_AUTH_SCREEN_OPTIONS = {
+const DEFAULT_AUTH_SCREEN_OPTIONS: NativeStackNavigationOptions = {
     title: '',
     headerShadowVisible: false,
     headerTransparent: true,
