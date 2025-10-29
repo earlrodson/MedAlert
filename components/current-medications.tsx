@@ -17,8 +17,39 @@ interface CurrentMedicationsProps {
 export function CurrentMedications({ medications, onMedicationTaken }: CurrentMedicationsProps) {
     const { colorScheme } = useColorScheme();
 
-    // Filter medications that haven't been taken yet
-    const pendingMedications = medications.filter(med => !med.taken);
+    // Filter medications that haven't been taken yet and are within the 2-hour window
+    const pendingMedications = medications.filter(med => {
+        if (med.taken) {
+            return false;
+        }
+
+        const now = new Date();
+        const medTimeParts = med.time.match(/(\d+):(\d+)\s*(AM|PM)/);
+
+        if (!medTimeParts) {
+            return false; // Skip medications with invalid time format
+        }
+
+        let hours = parseInt(medTimeParts[1], 10);
+        const minutes = parseInt(medTimeParts[2], 10);
+        const ampm = medTimeParts[3];
+
+        if (ampm === 'PM' && hours < 12) {
+            hours += 12;
+        }
+        if (ampm === 'AM' && hours === 12) {
+            hours = 0; // Midnight case
+        }
+
+        const medDate = new Date();
+        medDate.setHours(hours, minutes, 0, 0);
+
+        const twoHours = 2 * 60 * 60 * 1000;
+        const lowerBound = new Date(now.getTime() - twoHours);
+        const upperBound = new Date(now.getTime() + twoHours);
+
+        return medDate >= lowerBound && medDate <= upperBound;
+    });
 
     if (pendingMedications.length === 0) {
         return (
@@ -60,6 +91,7 @@ export function CurrentMedications({ medications, onMedicationTaken }: CurrentMe
                             size="sm"
                             onPress={() => onMedicationTaken(medication.id)}
                             className="ml-4"
+                            variant={"outline"}
                         >
                             <Check size={16} className="mr-1" />
                             <Text className="text-sm font-medium">Taken</Text>

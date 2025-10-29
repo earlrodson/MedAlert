@@ -5,6 +5,10 @@ import { UpcomingReminders, type Medication } from '@/components/upcoming-remind
 import { WelcomeSection } from '@/components/welcome-section';
 import { CurrentMedications } from '@/components/current-medications';
 import { initDatabase, getTodayMedications, type MedicationRecord } from '@/lib/database';
+import {
+    registerForPushNotificationsAsync,
+    scheduleAllPendingMedications,
+} from '@/lib/notifications';
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -57,6 +61,7 @@ export default function Screen() {
             }));
 
             setMedications(formattedMedications);
+            await scheduleAllPendingMedications(formattedMedications);
             setError(null);
         } catch (err) {
             console.error('Error loading medications:', err);
@@ -79,6 +84,9 @@ export default function Screen() {
         };
 
         setup();
+
+        // Register for push notifications
+        registerForPushNotificationsAsync();
     }, [loadMedications]);
 
     if (isLoading) {

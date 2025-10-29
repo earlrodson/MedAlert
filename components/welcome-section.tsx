@@ -15,7 +15,7 @@ export function WelcomeSection() {
             </Text>
             <View className="mt-2 flex-row items-center">
                 <Text className="ml-1 text-sm text-accent-foreground">
-                    {currentTime} • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </Text>
             </View>
         </View>
