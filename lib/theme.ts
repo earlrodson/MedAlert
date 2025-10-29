@@ -11,83 +11,83 @@ export const THEME = {
     popoverForeground: 'hsl(224 30% 15%)',
     
     // Primary (Medical Blue)
-    primary: 'hsl(210 100% 40%)',
+    primary: 'hsl(195 35% 47%)',
     primaryForeground: 'hsl(0 0% 100%)',
-    primaryLight: 'hsl(210 100% 95%)',
+    primaryLight: 'hsl(195 35% 90%)',
     
     // Secondary (Wellness Green)
-    secondary: 'hsl(156 80% 35%)',
+    secondary: 'hsl(105 34% 58%)',
     secondaryForeground: 'hsl(0 0% 100%)',
-    secondaryLight: 'hsl(156 80% 95%)',
+    secondaryLight: 'hsl(105 34% 90%)',
     
     // Accent (Neutral Grays)
-    accent: 'hsl(220 20% 97%)',
-    accentForeground: 'hsl(220 10% 46%)',
+    accent: 'hsl(42 64% 86%)',
+    accentForeground: 'hsl(210 10% 46%)',
     
     // Status colors
-    success: 'hsl(156 80% 35%)',
-    warning: 'hsl(30 100% 50%)',
-    danger: 'hsl(0 84% 60%)',
-    info: 'hsl(210 100% 50%)',
+    success: 'hsl(105 34% 58%)',
+    warning: 'hsl(38 70% 63%)',
+    danger: 'hsl(0 58% 58%)',
+    info: 'hsl(200 58% 65%)',
     
     // UI elements
-    muted: 'hsl(220 20% 97%)',
-    mutedForeground: 'hsl(220 10% 46%)',
+    muted: 'hsl(42 64% 86%)',
+    mutedForeground: 'hsl(210 10% 46%)',
     border: 'hsl(220 20% 90%)',
     input: 'hsl(220 20% 95%)',
-    ring: 'hsl(210 100% 40%)',
+    ring: 'hsl(195 35% 47%)',
     radius: '0.5rem',
     
     // Additional colors
-    chart1: 'hsl(210 100% 50%)',
-    chart2: 'hsl(156 80% 35%)',
-    chart3: 'hsl(30 100% 50%)',
-    chart4: 'hsl(0 84% 60%)',
+    chart1: 'hsl(195 35% 50%)',
+    chart2: 'hsl(105 34% 60%)',
+    chart3: 'hsl(38 70% 63%)',
+    chart4: 'hsl(0 58% 58%)',
     chart5: 'hsl(270 80% 60%)',
   },
   dark: {
     // Base colors
-    background: 'hsl(224 30% 10%)',
+    background: 'hsl(210 30% 8%)',
     foreground: 'hsl(0 0% 98%)',
-    card: 'hsl(224 30% 12%)',
+    card: 'hsl(210 30% 10%)',
     cardForeground: 'hsl(0 0% 98%)',
-    popover: 'hsl(224 30% 12%)',
+    popover: 'hsl(210 30% 10%)',
     popoverForeground: 'hsl(0 0% 98%)',
     
-    // Primary (Medical Blue)
-    primary: 'hsl(210 100% 50%)',
+    // Primary (Medical Blue) - brighter for dark mode
+    primary: 'hsl(195 45% 55%)',
     primaryForeground: 'hsl(0 0% 98%)',
-    primaryLight: 'hsl(210 100% 20%)',
+    primaryLight: 'hsl(195 35% 20%)',
     
-    // Secondary (Wellness Green)
-    secondary: 'hsl(156 80% 40%)',
+    // Secondary (Wellness Green) - brighter for dark mode
+    secondary: 'hsl(105 40% 65%)',
     secondaryForeground: 'hsl(0 0% 98%)',
-    secondaryLight: 'hsl(156 80% 15%)',
+    secondaryLight: 'hsl(105 34% 18%)',
     
-    // Accent (Neutral Grays)
-    accent: 'hsl(220 20% 18%)',
-    accentForeground: 'hsl(220 10% 80%)',
+    // Accent (Neutral Grays) - darker variants
+    accent: 'hsl(210 20% 18%)',
+    accentForeground: 'hsl(0 0% 85%)',
     
-    // Status colors
-    success: 'hsl(156 80% 40%)',
-    warning: 'hsl(30 100% 55%)',
-    danger: 'hsl(0 84% 65%)',
-    info: 'hsl(210 100% 55%)',
+    // Status colors - brighter for dark mode
+    success: 'hsl(105 40% 65%)',
+    warning: 'hsl(38 75% 68%)',
+    danger: 'hsl(0 65% 65%)',
+    info: 'hsl(200 65% 70%)',
     
     // UI elements
-    muted: 'hsl(220 20% 18%)',
-    mutedForeground: 'hsl(220 10% 70%)',
-    border: 'hsl(220 20% 25%)',
-    input: 'hsl(220 20% 22%)',
-    ring: 'hsl(210 100% 50%)',
+    muted: 'hsl(210 20% 18%)',
+    mutedForeground: 'hsl(0 0% 75%)',
+    border: 'hsl(210 20% 25%)',
+    input: 'hsl(210 20% 22%)',
+    ring: 'hsl(195 45% 55%)',
     radius: '0.5rem',
     
     // Additional colors
-    chart1: 'hsl(210 100% 55%)',
-    chart2: 'hsl(156 80% 45%)',
-    chart3: 'hsl(30 100% 55%)',
-    chart4: 'hsl(0 84% 65%)',
-    chart5: 'hsl(270 80% 65%)',
+    chart1: 'hsl(195 45% 60%)',
+    chart2: 'hsl(105 40% 68%)',
+    chart3: 'hsl(38 75% 68%)',
+    chart4: 'hsl(0 65% 65%)',
+    chart5: 'hsl(270 85% 68%)',
   },
 };
 

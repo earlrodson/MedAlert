@@ -9,13 +9,13 @@ export function WelcomeSection() {
 
     return (
         <View className="mb-8">
-            <Text className="text-muted-foreground">Good {getTimeOfDay()},</Text>
+            <Text className="text-accent-foreground">Good {getTimeOfDay()},</Text>
             <Text className="text-2xl font-bold text-foreground">
                 {user?.firstName || 'User'}
             </Text>
             <View className="mt-2 flex-row items-center">
-                <Text className="ml-1 text-sm text-muted-foreground">
-                    {currentTime} • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                <Text className="ml-1 text-sm text-accent-foreground">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </Text>
             </View>
         </View>
