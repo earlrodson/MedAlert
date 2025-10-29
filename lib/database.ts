@@ -240,14 +240,25 @@ export const deleteMedication = async (id: number) => {
   await db.runAsync('DELETE FROM medications WHERE id = ?', [id]);
 };
 
-export const getTodayMedications = async (): Promise<MedicationRecord[]> => {
-  const today = new Date().toISOString().split('T')[0];
+export const getMedicationsByDate = async (date: Date): Promise<MedicationRecord[]> => {
+  const dateString = date.toISOString().split('T')[0];
+  
+  // Get all medications where:
+  // 1. The start date is on or before the selected date
+  // 2. Either:
+  //    - endDate is NULL (medication is ongoing)
+  //    - OR endDate is on or after the selected date
   const result = await db.getAllAsync<MedicationRecord>(
     `SELECT * FROM medications 
-     WHERE startDate <= ? 
-     AND (endDate IS NULL OR endDate >= ?)
+     WHERE date(startDate) <= date(?)
+     AND (endDate IS NULL OR date(endDate) >= date(?))
      ORDER BY time ASC`,
-    [today, today]
+    [dateString, dateString]
   );
+  
   return result;
+};
+
+export const getTodayMedications = async (): Promise<MedicationRecord[]> => {
+  return getMedicationsByDate(new Date());
 };
