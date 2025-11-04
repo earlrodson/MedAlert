@@ -10,7 +10,11 @@ import { Link, router } from 'expo-router';
 import * as React from 'react';
 import { type TextInput, View } from 'react-native';
 
-export function SignInForm() {
+interface SignInFormProps {
+  onSuccess?: () => void;
+}
+
+export function SignInForm({ onSuccess }: SignInFormProps) {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -34,6 +38,9 @@ export function SignInForm() {
       if (signInAttempt.status === 'complete') {
         setError({ email: '', password: '' });
         await setActive({ session: signInAttempt.createdSessionId });
+        if (onSuccess) {
+          onSuccess();
+        }
         return;
       }
       // TODO: Handle other statuses
