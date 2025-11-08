@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 
 export const THEME = {
   light: {
-    // Base colors
+    // Base colors - Actual HSL values for React Native
     background: 'hsl(0 0% 100%)',
     foreground: 'hsl(224 30% 15%)',
     card: 'hsl(0 0% 100%)',
@@ -10,43 +10,50 @@ export const THEME = {
     popover: 'hsl(0 0% 100%)',
     popoverForeground: 'hsl(224 30% 15%)',
     
-    // Primary (Medical Blue)
+    // Semantic colors
     primary: 'hsl(195 35% 47%)',
     primaryForeground: 'hsl(0 0% 100%)',
-    primaryLight: 'hsl(195 35% 90%)',
-    
-    // Secondary (Wellness Green)
     secondary: 'hsl(105 34% 58%)',
     secondaryForeground: 'hsl(0 0% 100%)',
-    secondaryLight: 'hsl(105 34% 90%)',
-    
-    // Accent (Neutral Grays)
-    accent: 'hsl(42 64% 86%)',
-    accentForeground: 'hsl(210 10% 46%)',
+    destructive: 'hsl(0 58% 58%)',
+    destructiveForeground: 'hsl(0 0% 100%)',
     
     // Status colors
     success: 'hsl(105 34% 58%)',
+    successForeground: 'hsl(0 0% 100%)',
     warning: 'hsl(38 70% 63%)',
-    danger: 'hsl(0 58% 58%)',
+    warningForeground: 'hsl(0 0% 100%)',
     info: 'hsl(200 58% 65%)',
+    infoForeground: 'hsl(0 0% 100%)',
     
-    // UI elements
+    // Neutral colors
     muted: 'hsl(42 64% 86%)',
     mutedForeground: 'hsl(210 10% 46%)',
+    accent: 'hsl(42 64% 86%)',
+    accentForeground: 'hsl(210 10% 46%)',
+    
+    // Surface colors
+    surface: 'hsl(0 0% 100%)',
+    surfaceForeground: 'hsl(224 30% 15%)',
+    surfaceVariant: 'hsl(210 20% 96%)',
+    
+    // UI elements
     border: 'hsl(220 20% 90%)',
     input: 'hsl(220 20% 95%)',
     ring: 'hsl(195 35% 47%)',
-    radius: '0.5rem',
     
-    // Additional colors
+    // Chart colors
     chart1: 'hsl(195 35% 50%)',
     chart2: 'hsl(105 34% 60%)',
     chart3: 'hsl(38 70% 63%)',
     chart4: 'hsl(0 58% 58%)',
     chart5: 'hsl(270 80% 60%)',
+    
+    // Design system
+    radius: '0.625rem',
   },
   dark: {
-    // Base colors
+    // Base colors - Actual HSL values for React Native
     background: 'hsl(210 30% 8%)',
     foreground: 'hsl(0 0% 98%)',
     card: 'hsl(210 30% 10%)',
@@ -54,40 +61,47 @@ export const THEME = {
     popover: 'hsl(210 30% 10%)',
     popoverForeground: 'hsl(0 0% 98%)',
     
-    // Primary (Medical Blue) - brighter for dark mode
+    // Semantic colors
     primary: 'hsl(195 45% 55%)',
     primaryForeground: 'hsl(0 0% 98%)',
-    primaryLight: 'hsl(195 35% 20%)',
-    
-    // Secondary (Wellness Green) - brighter for dark mode
     secondary: 'hsl(105 40% 65%)',
     secondaryForeground: 'hsl(0 0% 98%)',
-    secondaryLight: 'hsl(105 34% 18%)',
+    destructive: 'hsl(0 65% 65%)',
+    destructiveForeground: 'hsl(0 0% 98%)',
     
-    // Accent (Neutral Grays) - darker variants
+    // Status colors
+    success: 'hsl(105 40% 65%)',
+    successForeground: 'hsl(0 0% 98%)',
+    warning: 'hsl(38 75% 68%)',
+    warningForeground: 'hsl(0 0% 98%)',
+    info: 'hsl(200 65% 70%)',
+    infoForeground: 'hsl(0 0% 98%)',
+    
+    // Neutral colors
+    muted: 'hsl(210 20% 18%)',
+    mutedForeground: 'hsl(0 0% 75%)',
     accent: 'hsl(210 20% 18%)',
     accentForeground: 'hsl(0 0% 85%)',
     
-    // Status colors - brighter for dark mode
-    success: 'hsl(105 40% 65%)',
-    warning: 'hsl(38 75% 68%)',
-    danger: 'hsl(0 65% 65%)',
-    info: 'hsl(200 65% 70%)',
+    // Surface colors
+    surface: 'hsl(210 30% 10%)',
+    surfaceForeground: 'hsl(0 0% 98%)',
+    surfaceVariant: 'hsl(210 20% 15%)',
     
     // UI elements
-    muted: 'hsl(210 20% 18%)',
-    mutedForeground: 'hsl(0 0% 75%)',
     border: 'hsl(210 20% 25%)',
     input: 'hsl(210 20% 22%)',
     ring: 'hsl(195 45% 55%)',
-    radius: '0.5rem',
     
-    // Additional colors
+    // Chart colors
     chart1: 'hsl(195 45% 60%)',
     chart2: 'hsl(105 40% 68%)',
     chart3: 'hsl(38 75% 68%)',
     chart4: 'hsl(0 65% 65%)',
     chart5: 'hsl(270 85% 68%)',
+    
+    // Design system
+    radius: '0.625rem',
   },
 };
 
@@ -98,7 +112,7 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
       background: THEME.light.background,
       border: THEME.light.border,
       card: THEME.light.card,
-      notification: THEME.light.danger,
+      notification: THEME.light.destructive,
       primary: THEME.light.primary,
       text: THEME.light.foreground,
     },
@@ -109,7 +123,7 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
       background: THEME.dark.background,
       border: THEME.dark.border,
       card: THEME.dark.card,
-      notification: THEME.dark.danger,
+      notification: THEME.dark.destructive,
       primary: THEME.dark.primary,
       text: THEME.dark.foreground,
     },
@@ -119,21 +133,21 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
 // Export color scales for easy access
 export const colors = {
   primary: {
-    light: THEME.light.primaryLight,
     main: THEME.light.primary,
+    foreground: THEME.light.primaryForeground,
     dark: THEME.dark.primary,
     contrastText: THEME.light.primaryForeground,
   },
   secondary: {
-    light: THEME.light.secondaryLight,
     main: THEME.light.secondary,
+    foreground: THEME.light.secondaryForeground,
     dark: THEME.dark.secondary,
     contrastText: THEME.light.secondaryForeground,
   },
   status: {
     success: THEME.light.success,
     warning: THEME.light.warning,
-    danger: THEME.light.danger,
+    danger: THEME.light.destructive,
     info: THEME.light.info,
   },
   text: {

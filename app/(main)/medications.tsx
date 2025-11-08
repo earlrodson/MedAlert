@@ -134,7 +134,7 @@ export default function MedicationsScreen() {
                     title: 'Medications',
                     headerShown: true,
                     headerRight: () => (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={handleAddMedication}
                             className="mr-4 p-1"
                         >
@@ -177,7 +177,7 @@ export default function MedicationsScreen() {
                                         const color = {
                                             upcoming: THEME[colorScheme].primary,
                                             due: THEME[colorScheme].success,
-                                            missed: THEME[colorScheme].danger
+                                            missed: THEME[colorScheme].destructive
                                         }[status];
 
                                         const Icon = {
@@ -195,14 +195,14 @@ export default function MedicationsScreen() {
                                             <MoreVertical size={18} color={THEME[colorScheme].mutedForeground} />
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-40">
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 className="flex-row items-center gap-2 p-3"
                                                 onPress={() => setViewingMedication(med)}
                                             >
                                                 <Info size={16} color={THEME[colorScheme].mutedForeground} />
                                                 <Text>Details</Text>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 className="flex-row items-center gap-2 p-3"
                                                 onPress={() => handleEditMedication(med)}
                                             >
@@ -214,8 +214,8 @@ export default function MedicationsScreen() {
                                                 onPress={() => confirmDelete(med)}
                                                 disabled={deletingId === med.id}
                                             >
-                                                <Trash2 size={16} color={THEME[colorScheme].danger} />
-                                                <Text style={{ color: deletingId === med.id ? THEME[colorScheme].mutedForeground : THEME[colorScheme].danger }}>
+                                                <Trash2 size={16} color={THEME[colorScheme].destructive} />
+                                                <Text style={{ color: deletingId === med.id ? THEME[colorScheme].mutedForeground : THEME[colorScheme].destructive }}>
                                                     {deletingId === med.id ? 'Deleting...' : 'Delete'}
                                                 </Text>
                                             </DropdownMenuItem>
@@ -231,15 +231,15 @@ export default function MedicationsScreen() {
                     Showing {medications.length} medication{medications.length !== 1 ? 's' : ''}
                 </Text>
             </ScrollView>
-            
-            <AddMedicationModal 
+
+            <AddMedicationModal
                 open={isAddModalVisible}
                 onOpenChange={setIsAddModalVisible}
                 onMedicationAdded={handleMedicationAdded}
                 medication={editingMedication}
                 isEditing={!!editingMedication}
             />
-            
+
             <ViewMedicationDialog
                 open={!!viewingMedication}
                 onOpenChange={(open) => !open && setViewingMedication(null)}

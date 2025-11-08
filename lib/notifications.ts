@@ -50,16 +50,27 @@ export async function scheduleMedicationNotification(medication: Medication) {
         hours = 0; // Midnight case
     }
 
+    // Platform-specific trigger configuration
+    const trigger = Platform.OS === 'android' 
+      ? {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: hours,
+          minute: minutes,
+          repeats: true,
+        }
+      : {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          hour: hours,
+          minute: minutes,
+          repeats: true,
+        } as any;
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Time for your medication!',
         body: `Don't forget to take ${medication.name} (${medication.dosage}).`,
       },
-      trigger: {
-        hour: hours,
-        minute: minutes,
-        repeats: true,
-      },
+      trigger,
     });
 }
 
@@ -77,6 +88,7 @@ export async function scheduleTestNotification() {
       body: 'This is a test notification from MedAlert!',
     },
     trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds: 5,
       repeats: false,
     },

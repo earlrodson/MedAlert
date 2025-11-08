@@ -4,7 +4,7 @@ import { QuickActions } from '@/components/quick-actions';
 import { UpcomingReminders, type Medication } from '@/components/upcoming-reminders';
 import { WelcomeSection } from '@/components/welcome-section';
 import { CurrentMedications } from '@/components/current-medications';
-import { initDatabase, getTodayMedications, type MedicationRecord } from '@/lib/database';
+import { getTodayMedications, type MedicationRecord } from '@/lib/database';
 import {
     registerForPushNotificationsAsync,
     scheduleAllPendingMedications,
@@ -72,18 +72,7 @@ export default function Screen() {
     }, []);
 
     React.useEffect(() => {
-        const setup = async () => {
-            try {
-                await initDatabase();
-                await loadMedications();
-            } catch (err) {
-                console.error('Error initializing database:', err);
-                setError('Failed to initialize database');
-                setIsLoading(false);
-            }
-        };
-
-        setup();
+        loadMedications();
 
         // Register for push notifications
         registerForPushNotificationsAsync();

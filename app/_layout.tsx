@@ -1,6 +1,7 @@
 import '@/global.css';
 
 import { NAV_THEME } from '@/lib/theme';
+import { initDatabase } from '@/lib/database';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { ThemeProvider } from '@react-navigation/native';
@@ -20,6 +21,20 @@ export {
 
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
+
+    // Initialize database on app startup
+    React.useEffect(() => {
+        const initializeDb = async () => {
+            try {
+                await initDatabase();
+                console.log('Database initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize database:', error);
+            }
+        };
+
+        initializeDb();
+    }, []);
 
     return (
         <ClerkProvider tokenCache={tokenCache}>
@@ -59,13 +74,13 @@ function Routes() {
     return (
         <Stack screenOptions={stackScreenOptions}>
             <Stack.Screen name="(main)" options={{ headerShown: false }} />
-            <Stack.Screen 
-                name="daily-schedule" 
+            <Stack.Screen
+                name="daily-schedule"
                 options={{
                     headerShown: false,
                     animation: 'slide_from_right',
                     presentation: 'card',
-                }} 
+                }}
             />
             <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
             <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
