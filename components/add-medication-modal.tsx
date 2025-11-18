@@ -12,8 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
 import { Textarea } from '@/components/ui/textarea';
-import { addMedication, updateMedication } from '@/lib/database';
-import { MedicationRecord } from '@/lib/database';
+import { database } from '@/lib/database-wrapper';
+import { MedicationRecord } from '@/lib/database-types';
+import { useAllMedications } from '@/lib/medication-status-provider';
 import * as React from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 
@@ -32,6 +33,7 @@ export function AddMedicationModal({
     medication = null,
     isEditing = false
 }: AddMedicationModalProps) {
+    const { refreshMedications } = useAllMedications();
     const [formData, setFormData] = React.useState({
         name: '',
         dosage: '',
@@ -85,8 +87,16 @@ export function AddMedicationModal({
         try {
             setIsSubmitting(true);
 
+            // Initialize database if not already done
+            const initResult = await database.init();
+            if (!initResult.success) {
+                console.error('Database initialization failed:', initResult.error);
+                Alert.alert('Database Error', 'Failed to initialize medication storage.');
+                return;
+            }
+
             if (isEditing && medication?.id) {
-                await updateMedication(medication.id, {
+                const updateResult = await database.updateMedication(medication.id, {
                     name: formData.name.trim(),
                     dosage: formData.dosage.trim(),
                     frequency: formData.frequency,
@@ -95,9 +105,18 @@ export function AddMedicationModal({
                     startDate: formData.startDate,
                     endDate: formData.endDate || undefined,
                 });
-                Alert.alert('Success', 'Medication updated successfully!');
+
+                if (updateResult.success) {
+                    Alert.alert('Success', 'Medication updated successfully!');
+                    refreshMedications(); // Refresh global state
+                    onOpenChange(false);
+                    onMedicationAdded?.();
+                } else {
+                    console.error('Failed to update medication:', updateResult.error);
+                    Alert.alert('Error', 'Failed to update medication. Please try again.');
+                }
             } else {
-                await addMedication({
+                const addResult = await database.addMedication({
                     name: formData.name.trim(),
                     dosage: formData.dosage.trim(),
                     frequency: formData.frequency,
@@ -106,14 +125,20 @@ export function AddMedicationModal({
                     startDate: formData.startDate,
                     endDate: formData.endDate || undefined,
                 });
-                Alert.alert('Success', 'Medication added successfully!');
-            }
 
-            onOpenChange(false);
-            onMedicationAdded?.();
+                if (addResult.success) {
+                    Alert.alert('Success', 'Medication added successfully!');
+                    refreshMedications(); // Refresh global state
+                    onOpenChange(false);
+                    onMedicationAdded?.();
+                } else {
+                    console.error('Failed to add medication:', addResult.error);
+                    Alert.alert('Error', 'Failed to add medication. Please try again.');
+                }
+            }
         } catch (error) {
-            console.error('Error adding medication:', error);
-            Alert.alert('Error', 'Failed to add medication. Please try again.');
+            console.error('Unexpected error with medication:', error);
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

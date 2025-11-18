@@ -1,7 +1,8 @@
 import '@/global.css';
 
 import { NAV_THEME } from '@/lib/theme';
-import { initDatabase } from '@/lib/database';
+import { database } from '@/lib/database-wrapper';
+import { logger } from '@/lib/error-handling';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { ThemeProvider } from '@react-navigation/native';
@@ -26,10 +27,16 @@ export default function RootLayout() {
     React.useEffect(() => {
         const initializeDb = async () => {
             try {
-                await initDatabase();
-                console.log('Database initialized successfully');
+                const result = await database.init();
+                if (result.success) {
+                    logger.info('Database initialized successfully', {}, 'AppLayout');
+                } else {
+                    throw new Error(result.error?.message || 'Database initialization failed');
+                }
             } catch (error) {
-                console.error('Failed to initialize database:', error);
+                logger.error('Failed to initialize database', error instanceof Error ? error : new Error(String(error)),
+                    {}, 'AppLayout');
+                // Don't crash the app, but log the error
             }
         };
 

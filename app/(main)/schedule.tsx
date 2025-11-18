@@ -2,14 +2,19 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { useState, useMemo, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, isPast } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Badge } from '@/components/ui/badge';
+import { database } from '@/lib/database-wrapper';
+import { THEME } from '@/lib/theme';
 
 export default function ScheduleScreen() {
     const today = new Date();
     const [currentDate, setCurrentDate] = useState(today);
     const [selectedDate, setSelectedDate] = useState(today);
+    const [medicationCounts, setMedicationCounts] = useState<Record<string, number>>({});
+    const [isLoadingCounts, setIsLoadingCounts] = useState(false);
 
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
@@ -60,6 +65,52 @@ export default function ScheduleScreen() {
         }
     };
 
+    // Fetch medication counts for all days in the current month
+    const fetchMedicationCounts = async (days: (Date | null)[]) => {
+        setIsLoadingCounts(true);
+        try {
+            const counts: Record<string, number> = {};
+
+            // Create an array of promises for fetching medication counts
+            const countPromises = days
+                .filter(day => day !== null && isSameMonth(day, currentDate))
+                .map(async (day) => {
+                    const dateString = format(day!, 'yyyy-MM-dd');
+                    try {
+                        const result = await database.getMedicationsByDate(day!);
+                        if (result.success && result.data) {
+                            return { dateString, count: result.data.length };
+                        } else {
+                            console.error(`Failed to fetch medications for ${dateString}:`, result.error?.message);
+                            return { dateString, count: 0 };
+                        }
+                    } catch (error) {
+                        console.error(`Failed to fetch medications for ${dateString}:`, error);
+                        return { dateString, count: 0 };
+                    }
+                });
+
+            // Wait for all count requests to complete
+            const results = await Promise.all(countPromises);
+
+            // Convert results to record
+            results.forEach(({ dateString, count }) => {
+                counts[dateString] = count;
+            });
+
+            setMedicationCounts(counts);
+        } catch (error) {
+            console.error('Error fetching medication counts:', error);
+        } finally {
+            setIsLoadingCounts(false);
+        }
+    };
+
+    // Fetch counts when month changes
+    useEffect(() => {
+        fetchMedicationCounts(daysInMonth);
+    }, [currentDate]);
+
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
@@ -104,6 +155,9 @@ export default function ScheduleScreen() {
                             const dayNumber = day ? format(day, 'd') : '';
                             const isCurrentMonth = day ? isSameMonth(day, currentDate) : false;
                             const isCurrentDay = day ? isToday(day) : false;
+                            const isPastDate = day ? isPast(day) : false;
+                            const dateString = day ? format(day, 'yyyy-MM-dd') : '';
+                            const medicationCount = day ? (medicationCounts[dateString] || 0) : 0;
 
                             return (
                                 <View style={styles.dayCell}>
@@ -112,24 +166,41 @@ export default function ScheduleScreen() {
                                             onPress={() => handleDayPress(day)}
                                             style={[
                                                 styles.dayButton,
-                                                !isCurrentMonth && styles.nonCurrentMonth
+                                                !isCurrentMonth && styles.nonCurrentMonth,
+                                                isPastDate && !isCurrentDay && styles.pastDate
                                             ]}
                                         >
                                             <View
                                                 style={[
                                                     styles.dayContent,
                                                     isCurrentDay && styles.currentDay,
-                                                    isSameDay(day, selectedDate) && !isCurrentDay && styles.selectedDay
+                                                    isSameDay(day, selectedDate) && !isCurrentDay && styles.selectedDay,
+                                                    isPastDate && !isCurrentDay && styles.pastDateContent
                                                 ]}
                                             >
                                                 <Text
                                                     style={[
                                                         styles.dayText,
-                                                        isCurrentDay && styles.currentDayText
+                                                        isCurrentDay && styles.currentDayText,
+                                                        isPastDate && !isCurrentDay && styles.pastDateText
                                                     ]}
                                                 >
                                                     {dayNumber}
                                                 </Text>
+
+                                                {/* Red floating badge for medication counts */}
+                                                {medicationCount > 0 && !isPastDate && (
+                                                    <View style={styles.badgeContainer}>
+                                                        <Badge
+                                                            variant="destructive"
+                                                            style={styles.medicationBadge}
+                                                        >
+                                                            <Text style={styles.badgeText}>
+                                                                {medicationCount > 99 ? '99+' : medicationCount.toString()}
+                                                            </Text>
+                                                        </Badge>
+                                                    </View>
+                                                )}
                                             </View>
                                         </TouchableOpacity>
                                     ) : (
@@ -185,6 +256,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: 'rgba(0, 0, 0, 0.1)',
+        position: 'relative',
     },
     currentDay: {
         backgroundColor: '#3b82f6',
@@ -208,5 +280,47 @@ const styles = StyleSheet.create({
     emptyDay: {
         width: '100%',
         height: '100%',
+    },
+    // New styles for past dates
+    pastDate: {
+        opacity: 0.6,
+    },
+    pastDateContent: {
+        backgroundColor: '#f3f4f6',
+        borderColor: '#d1d5db',
+    },
+    pastDateText: {
+        color: '#6b7280', // muted-foreground equivalent
+    },
+    // Badge styles
+    badgeContainer: {
+        position: 'absolute',
+        top: -2,
+        right: -2,
+        zIndex: 10,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    medicationBadge: {
+        minWidth: 18,
+        height: 18,
+        borderRadius: 9,
+        paddingHorizontal: 4,
+        paddingVertical: 0,
+        backgroundColor: '#ef4444', // destructive color
+        borderWidth: 0,
+    },
+    badgeText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#ffffff',
+        textAlign: 'center',
+        lineHeight: 18,
     },
 });
