@@ -457,6 +457,7 @@ export const getAllMedicationStatusesForDate = async (date: string): Promise<Med
     'SELECT * FROM medication_status WHERE date = ?',
     [date]
   );
+  
   return result;
 };
 
