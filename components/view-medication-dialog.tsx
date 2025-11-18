@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Text } from '@/components/ui/text';
-import { MedicationRecord } from '@/lib/database';
+import { MedicationRecord } from '@/lib/database-types';
 import { Clock, Calendar, AlertCircle, CheckCircle } from 'lucide-react-native';
 import { View } from 'react-native';
 

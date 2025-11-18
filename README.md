@@ -20,13 +20,9 @@ Before running the app, make sure to:
 Then start the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
+# Note: This project uses pnpm as the primary package manager
+# You can also use: yarn dev, pnpm dev, or bun dev if preferred
 ```
 
 This will launch the Expo Go Server. You can open the app with:

@@ -25,11 +25,7 @@ export function ThemeToggle() {
             <Icon
                 size={22}
                 strokeWidth={2}
-                className={cn(
-                    colorScheme === 'dark' 
-                        ? 'text-[hsl(195,45%,55%)]' 
-                        : 'text-[hsl(195,35%,47%)]'
-                )}
+                color={THEME[colorScheme ?? 'light'].primary}
             />
         </Pressable>
     );

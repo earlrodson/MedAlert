@@ -1,12 +1,13 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AddMedicationModal } from '@/components/add-medication-modal';
 import { ViewMedicationDialog } from '@/components/view-medication-dialog';
 import { Alert } from 'react-native';
-import { deleteMedication, getAllMedications } from '@/lib/database';
-import { MedicationRecord } from '@/lib/database';
+import { database } from '@/lib/database-wrapper';
+import { MedicationRecord } from '@/lib/database-types';
+import { useAllMedications } from '@/lib/medication-status-provider';
 import { DataTable } from 'react-native-paper';
 import { useColorScheme } from 'react-native';
 import { THEME } from '@/lib/theme';
@@ -38,40 +39,37 @@ const getMedicationStatus = (time: string): { status: 'upcoming' | 'due' | 'miss
 };
 
 export default function MedicationsScreen() {
-    const [medications, setMedications] = useState<MedicationRecord[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { medications, loading, refreshMedications: globalRefreshMedications } = useAllMedications();
+    const [refreshing, setRefreshing] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [editingMedication, setEditingMedication] = useState<MedicationRecord | null>(null);
     const [viewingMedication, setViewingMedication] = useState<MedicationRecord | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const colorScheme = useColorScheme() || 'light';
 
-    const refreshMedications = async () => {
+    const handleRefresh = async () => {
+        setRefreshing(true);
         try {
-            const meds = await getAllMedications();
-            setMedications(meds);
+            await globalRefreshMedications();
         } catch (error) {
-            console.error('Failed to load medications:', error);
+            console.error('Error refreshing medications:', error);
         } finally {
-            setLoading(false);
+            setRefreshing(false);
         }
     };
 
-    useEffect(() => {
-        const loadMedications = async () => {
-            try {
-                const meds = await getAllMedications();
-                setMedications(meds);
-            } catch (error) {
-                console.error('Failed to load medications:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadMedications();
-    }, []);
-
+    // Convert MedicationStatusInfo to MedicationRecord format for display
+    const convertedMedications: MedicationRecord[] = medications.map(med => ({
+        id: parseInt(med.medicationId),
+        name: med.name,
+        dosage: med.dosage,
+        time: med.time24h,
+        frequency: 'Once daily', // Default value - would need to be fetched from DB if needed
+        instructions: '',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: '',
+        status: med.taken ? 'taken' : 'pending'
+    }));
     if (loading) {
         return (
             <SafeAreaView className="flex-1 bg-background items-center justify-center">
@@ -93,17 +91,22 @@ export default function MedicationsScreen() {
     const handleMedicationAdded = () => {
         setIsAddModalVisible(false);
         setEditingMedication(null);
-        refreshMedications();
+        globalRefreshMedications();
     };
 
     const handleDeleteMedication = async (id: number) => {
         try {
             setDeletingId(id);
-            await deleteMedication(id);
-            await refreshMedications();
+            const deleteResult = await database.deleteMedication(id);
+            if (deleteResult.success) {
+                globalRefreshMedications();
+            } else {
+                console.error('Failed to delete medication:', deleteResult.error);
+                Alert.alert('Error', 'Failed to delete medication. Please try again.');
+            }
         } catch (error) {
-            console.error('Failed to delete medication:', error);
-            Alert.alert('Error', 'Failed to delete medication. Please try again.');
+            console.error('Unexpected error deleting medication:', error);
+            Alert.alert('Error', 'An unexpected error occurred while deleting the medication.');
         } finally {
             setDeletingId(null);
         }
@@ -134,7 +137,7 @@ export default function MedicationsScreen() {
                     title: 'Medications',
                     headerShown: true,
                     headerRight: () => (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={handleAddMedication}
                             className="mr-4 p-1"
                         >
@@ -143,7 +146,17 @@ export default function MedicationsScreen() {
                     ),
                 }}
             />
-            <ScrollView className="flex-1 p-4">
+            <ScrollView
+                className="flex-1 p-4"
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        tintColor={colorScheme === 'dark' ? THEME.dark.primary : THEME.light.primary}
+                        colors={[colorScheme === 'dark' ? THEME.dark.primary : THEME.light.primary]}
+                    />
+                }
+            >
                 {medications.length === 0 ? (
                     <View className="flex-1 items-center justify-center p-8">
                         <Text className="text-muted-foreground text-center">
@@ -160,7 +173,7 @@ export default function MedicationsScreen() {
                             <DataTable.Title style={{ width: 48 }} >{""}</DataTable.Title>
                         </DataTable.Header>
 
-                        {medications.map((med) => (
+                        {convertedMedications.map((med) => (
                             <DataTable.Row key={med.id} className="border-b border-border">
                                 <DataTable.Cell style={{ flex: 3 }}>
                                     <Text className="font-medium text-foreground">{med.name}</Text>
@@ -177,7 +190,7 @@ export default function MedicationsScreen() {
                                         const color = {
                                             upcoming: THEME[colorScheme].primary,
                                             due: THEME[colorScheme].success,
-                                            missed: THEME[colorScheme].danger
+                                            missed: THEME[colorScheme].destructive
                                         }[status];
 
                                         const Icon = {
@@ -195,14 +208,14 @@ export default function MedicationsScreen() {
                                             <MoreVertical size={18} color={THEME[colorScheme].mutedForeground} />
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-40">
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 className="flex-row items-center gap-2 p-3"
                                                 onPress={() => setViewingMedication(med)}
                                             >
                                                 <Info size={16} color={THEME[colorScheme].mutedForeground} />
                                                 <Text>Details</Text>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 className="flex-row items-center gap-2 p-3"
                                                 onPress={() => handleEditMedication(med)}
                                             >
@@ -214,8 +227,8 @@ export default function MedicationsScreen() {
                                                 onPress={() => confirmDelete(med)}
                                                 disabled={deletingId === med.id}
                                             >
-                                                <Trash2 size={16} color={THEME[colorScheme].danger} />
-                                                <Text style={{ color: deletingId === med.id ? THEME[colorScheme].mutedForeground : THEME[colorScheme].danger }}>
+                                                <Trash2 size={16} color={THEME[colorScheme].destructive} />
+                                                <Text style={{ color: deletingId === med.id ? THEME[colorScheme].mutedForeground : THEME[colorScheme].destructive }}>
                                                     {deletingId === med.id ? 'Deleting...' : 'Delete'}
                                                 </Text>
                                             </DropdownMenuItem>
@@ -228,18 +241,18 @@ export default function MedicationsScreen() {
                 )}
 
                 <Text className="text-muted-foreground text-sm mt-4">
-                    Showing {medications.length} medication{medications.length !== 1 ? 's' : ''}
+                    Showing {convertedMedications.length} medication{convertedMedications.length !== 1 ? 's' : ''}
                 </Text>
             </ScrollView>
-            
-            <AddMedicationModal 
+
+            <AddMedicationModal
                 open={isAddModalVisible}
                 onOpenChange={setIsAddModalVisible}
                 onMedicationAdded={handleMedicationAdded}
                 medication={editingMedication}
                 isEditing={!!editingMedication}
             />
-            
+
             <ViewMedicationDialog
                 open={!!viewingMedication}
                 onOpenChange={(open) => !open && setViewingMedication(null)}
