@@ -12,16 +12,30 @@ import { logger } from '@/lib/error-handling';
  */
 export interface MedicationStatusInfo {
   medicationId: string;
+  id?: number | string;
   name: string;
+  medicationName?: string; // Alias for name for backward compatibility
   dosage: string;
+  frequency?: string;
   time: string;
   time24h: string;
+  scheduledTime?: string; // For backward compatibility
   taken: boolean;
   takenAt?: string | null;
   minutesUntil?: number;
   isPastDue?: boolean;
   isCurrent?: boolean;
   isUpcoming?: boolean;
+  // Additional properties for MedicationWithStatus compatibility
+  instructions?: string | null;
+  startDate?: string;
+  endDate?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: {
+    taken: boolean;
+    takenAt?: string | null;
+  };
 }
 
 /**

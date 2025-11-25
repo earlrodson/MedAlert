@@ -80,8 +80,8 @@ export interface DatabaseConfig {
 }
 
 export interface DatabaseAdapter {
-  init(): Promise<void>;
-  close(): Promise<void>;
+  init(): Promise<DatabaseResult<void>>;
+  close(): Promise<DatabaseResult<void>>;
   getAllMedications(): Promise<DatabaseResult<MedicationRecord[]>>;
   getMedicationById(id: number): Promise<DatabaseResult<MedicationRecord | null>>;
   addMedication(medication: NewMedication): Promise<DatabaseResult<number>>;

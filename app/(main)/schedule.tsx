@@ -71,28 +71,50 @@ export default function ScheduleScreen() {
 
         // Filter days for current month
         const daysToProcess = days.filter(day => day !== null && isSameMonth(day, currentDate));
-        console.log('🔍 Calculating medication counts for days:',
-            daysToProcess.map(d => format(d!, 'yyyy-MM-dd'))
-        );
 
-        // Calculate untaken medication counts for each day
+        // Calculate medication counts for each day
         daysToProcess.forEach(day => {
-            const dateString = format(day!, 'yyyy-MM-dd');
+            if (!day) return;
 
-            // Filter medications for this date that haven't been taken
-            const untakenMeds = allMedications.filter(med => {
-                const medDate = med.scheduledTime ?
-                    new Date(med.scheduledTime).toISOString().split('T')[0] :
-                    new Date().toISOString().split('T')[0];
+            const dateString = format(day, 'yyyy-MM-dd');
 
-                return medDate === dateString && !med.taken;
+            // Count medications scheduled for this date
+            const scheduledMeds = allMedications.filter(med => {
+                // Check if medication is active on this date
+                const isAfterStart = !med.startDate || new Date(med.startDate) <= day;
+                const isBeforeEnd = !med.endDate || new Date(med.endDate) >= day;
+
+                if (!isAfterStart || !isBeforeEnd) return false;
+
+                // Check frequency patterns
+                const frequency = med.frequency?.toLowerCase() || '';
+
+                if (frequency.includes('daily') || frequency.includes('once daily')) {
+                    // Daily medications are scheduled every day
+                    return true;
+                } else if (frequency.includes('twice daily')) {
+                    // Twice daily medications count as 1 scheduling event
+                    return true;
+                } else if (frequency.includes('weekly')) {
+                    // For weekly, we'd need day of week logic - simplified for now
+                    return false;
+                } else {
+                    // Default: assume scheduled if no clear frequency pattern
+                    return true;
+                }
+            });
+
+            // Count untaken medications for this date
+            const untakenMeds = scheduledMeds.filter(med => {
+                // Check if this specific medication has been marked as taken for this date
+                // This would ideally check against medication status data for the specific date
+                // For now, use the taken property as a general indicator
+                return !med.taken;
             });
 
             counts[dateString] = untakenMeds.length;
-            console.log(`✅ Medications for ${dateString}: ${untakenMeds.length} untaken`);
         });
 
-        console.log('📊 Final untaken medication counts:', counts);
         setMedicationCounts(counts);
     };
 
@@ -150,15 +172,6 @@ export default function ScheduleScreen() {
                             const isPastDate = day ? isBefore(day, startOfDay(new Date())) : false;
                             const dateString = day ? format(day, 'yyyy-MM-dd') : '';
                             const medicationCount = day ? (medicationCounts[dateString] || 0) : 0;
-
-                            // Debug logging for date classification
-                            console.log('📅 Date Debug:', {
-                                date: dateString,
-                                isCurrentDay,
-                                isPastDate,
-                                untakenMedicationCount: medicationCount,
-                                shouldShowBadge: medicationCount > 0 && (!isPastDate || isCurrentDay)
-                            });
 
                             return (
                                 <View style={styles.dayCell}>

@@ -24,10 +24,10 @@ import { logger } from './error-handling';
 import { DatabaseErrorHandler, DatabaseValidator } from './database-error-handling';
 
 // Import native SQLite adapter (will be loaded only on native platforms)
-let NativeSQLiteAdapter: typeof SQLiteNativeAdapter | null = null;
+let NativeSQLiteAdapter: any = null;
 
 // Lazy load native adapter to avoid web import issues
-const getNativeAdapter = (): typeof SQLiteNativeAdapter | null => {
+const getNativeAdapter = (): any => {
   if (Platform.OS !== 'web' && !NativeSQLiteAdapter) {
     try {
       const nativeModule = require('./adapters/sqlite-native');

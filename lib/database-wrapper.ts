@@ -14,6 +14,9 @@ import {
   DatabaseError,
   DATABASE_ERROR_CODES
 } from './database-types';
+
+// Re-export MedicationWithStatus for other modules
+export type { MedicationWithStatus } from './database-types';
 import { platformStorage } from './platform-storage';
 import { DatabaseErrorHandler, DatabaseValidator, EnhancedDatabaseError } from './database-error-handling';
 

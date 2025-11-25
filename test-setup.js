@@ -14,41 +14,39 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 });
 
-// Mock react-native-css-interop BEFORE any imports
-jest.mock('react-native-css-interop/src/runtime/web/color-scheme', () => ({
-  getColorScheme: jest.fn(() => 'light'),
-}), { virtual: true });
+// Mock react-native-css-interop with proper JSX runtime
+jest.mock('react-native-css-interop', () => {
+  const React = require('react');
+  return {
+    ...require('react/jsx-runtime'),
+    getColorScheme: jest.fn(() => 'light'),
+    useColorScheme: jest.fn(() => 'light'),
+    jsx: React.jsx,
+    jsxs: React.jsxs,
+    Fragment: React.Fragment,
+  };
+}, { virtual: true });
 
-jest.mock('react-native-css-interop', () => ({
-  getColorScheme: jest.fn(() => 'light'),
-  useColorScheme: jest.fn(() => 'light'),
-}), { virtual: true });
+jest.mock('lucide-react-native', () => ({}), { virtual: true });
 
-// Mock React Native modules
 jest.mock('react-native', () => ({
-  Platform: {
-    OS: 'web',
-    select: jest.fn((obj) => obj.web || obj.default),
-  },
-  Dimensions: {
-    get: jest.fn(() => ({ width: 375, height: 667 })),
-  },
-  PixelRatio: {
-    get: jest.fn(() => 2),
-  },
-  StatusBar: {
-    setBarStyle: jest.fn(),
-    setHidden: jest.fn(),
-  },
-  Alert: {
-    alert: jest.fn(),
-  },
-  Linking: {
-    openURL: jest.fn(),
-  },
-}));
+  View: 'View',
+  Text: 'Text',
+  ScrollView: 'ScrollView',
+  TouchableOpacity: 'TouchableOpacity',
+  FlatList: 'FlatList',
+  SafeAreaView: 'SafeAreaView',
+  StyleSheet: { create: jest.fn() },
+  Platform: { OS: 'web', select: jest.fn() },
+  Dimensions: { get: jest.fn() },
+  Alert: { alert: jest.fn() },
+}), { virtual: true });
 
-// Mock AsyncStorage
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaView: 'SafeAreaView',
+  useSafeAreaInsets: jest.fn(),
+}), { virtual: true });
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
   setItem: jest.fn(),
@@ -108,17 +106,10 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock NativeWind
-jest.mock('nativewind', () => ({
-  create: jest.fn((component) => component),
-  useColorScheme: jest.fn(() => ({ colorScheme: 'light' })),
-  styled: jest.fn((component) => component),
-}));
+jest.mock('nativewind', () => ({}), { virtual: true });
 
 // Mock @rn-primitives/slot to prevent JSX parsing issues
-jest.mock('@rn-primitives/slot', () => ({
-  Slot: jest.fn(({ children, ...props }) => children),
-  Root: jest.fn(({ children, ...props }) => children),
-}), { virtual: true });
+jest.mock('@rn-primitives/slot', () => ({}), { virtual: true });
 
 // Mock react-native-web color scheme - extend existing window object
 if (typeof window !== 'undefined') {
@@ -133,25 +124,6 @@ if (typeof window !== 'undefined') {
     dispatchEvent: jest.fn(),
   }));
 }
-
-// Mock Lucide icons as simple components
-jest.mock('lucide-react-native', () => ({
-  Pill: ({ size, color, ...props }) => 'Pill',
-  Calendar: ({ size, color, ...props }) => 'Calendar',
-  Clock: ({ size, color, ...props }) => 'Clock',
-  Bell: ({ size, color, ...props }) => 'Bell',
-  Settings: ({ size, color, ...props }) => 'Settings',
-  User: ({ size, color, ...props }) => 'User',
-  Home: ({ size, color, ...props }) => 'Home',
-  Plus: ({ size, color, ...props }) => 'Plus',
-  X: ({ size, color, ...props }) => 'X',
-  Check: ({ size, color, ...props }) => 'Check',
-  ChevronRight: ({ size, color, ...props }) => 'ChevronRight',
-  Menu: ({ size, color, ...props }) => 'Menu',
-  Moon: ({ size, color, ...props }) => 'Moon',
-  Sun: ({ size, color, ...props }) => 'Sun',
-  AlertCircle: ({ size, color, ...props }) => 'AlertCircle',
-}));
 
 // Mock expo-notifications
 jest.mock('expo-notifications', () => ({

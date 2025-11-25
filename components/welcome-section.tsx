@@ -1,7 +1,7 @@
 import { Text } from '@/components/ui/text';
 import { useUser } from '@clerk/clerk-expo';
 import { View } from 'react-native';
-import { getTimeOfDay } from '@/lib/utils';
+import { getTimeOfDay } from '@/lib/time-utils';
 
 export function WelcomeSection() {
     const { user } = useUser();

@@ -423,3 +423,14 @@ export function formatMedicationTime(hour24: number, minute: number): string {
 export function isValidTimeFormat(timeString: string): boolean {
   return TimeUtils.validateTimeFormat(timeString).isValid;
 }
+
+/**
+ * Get time of day (Morning, Afternoon, Evening)
+ * Moved from utils.ts to consolidate time-related functions
+ */
+export function getTimeOfDay(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Morning';
+  if (hour < 18) return 'Afternoon';
+  return 'Evening';
+}

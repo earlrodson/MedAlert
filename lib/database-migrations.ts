@@ -3,7 +3,7 @@
  * Handles database version migrations and schema changes
  */
 
-import type { DATABASE_CONFIG } from './database-types';
+import { DATABASE_CONFIG } from './database-types';
 
 // Migration interface
 export interface Migration {

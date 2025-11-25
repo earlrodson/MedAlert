@@ -1,4 +1,5 @@
-import { cn, getTimeOfDay } from '../../lib/utils';
+import { cn } from '../../lib/utils';
+import { getTimeOfDay } from '../../lib/time-utils';
 
 describe('Utils Tests', () => {
   describe('cn function', () => {
