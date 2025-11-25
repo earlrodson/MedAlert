@@ -17,6 +17,7 @@ import {
   SHOULD_SEED_DATA
 } from '../database-types';
 import { logger } from '../error-handling';
+import { COMPLETE_DATABASE_SCHEMA, REQUIRED_MEDICATIONS_COLUMNS, REQUIRED_MEDICATION_STATUS_COLUMNS } from '../database-schema';
 
 // Import expo-sqlite with proper platform handling
 let SQLite: any;
@@ -78,12 +79,7 @@ export class SQLiteNativeAdapter implements DatabaseAdapter {
       }
 
       const columnNames = columns.map((col: any) => col.name);
-      const requiredColumns = [
-        'id', 'name', 'dosage', 'frequency', 'time',
-        'instructions', 'startDate', 'endDate', 'createdAt', 'updatedAt'
-      ];
-
-      return requiredColumns.every(col => columnNames.includes(col));
+      return REQUIRED_MEDICATIONS_COLUMNS.every(col => columnNames.includes(col));
     } catch (error) {
       logger.error('Error checking table schema', error instanceof Error ? error : new Error(String(error)),
         { operation: 'checkTableSchema' }, 'SQLiteNativeAdapter');
@@ -92,37 +88,7 @@ export class SQLiteNativeAdapter implements DatabaseAdapter {
   }
 
   private async createTables(): Promise<void> {
-    await this.db.execAsync(`
-      PRAGMA journal_mode = WAL;
-
-      CREATE TABLE IF NOT EXISTS medications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        dosage TEXT NOT NULL,
-        frequency TEXT NOT NULL,
-        time TEXT NOT NULL,
-        instructions TEXT,
-        startDate TEXT NOT NULL,
-        endDate TEXT,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS medication_status (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        medicationId INTEGER NOT NULL,
-        date TEXT NOT NULL,
-        taken BOOLEAN NOT NULL DEFAULT 0,
-        takenAt TEXT,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        FOREIGN KEY (medicationId) REFERENCES medications (id) ON DELETE CASCADE
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_medications_startDate ON medications(startDate);
-      CREATE INDEX IF NOT EXISTS idx_medications_time ON medications(time);
-      CREATE INDEX IF NOT EXISTS idx_medication_status_medication_date ON medication_status(medicationId, date);
-    `);
+    await this.db.execAsync(COMPLETE_DATABASE_SCHEMA);
   }
 
   private async seedDatabase(): Promise<void> {
@@ -434,8 +400,8 @@ export class SQLiteNativeAdapter implements DatabaseAdapter {
 
       const result = await this.db.getAllAsync(
         `SELECT * FROM medications
-         WHERE date(startDate) <= date(?)
-         AND (endDate IS NULL OR date(endDate) >= date(?))
+         WHERE startDate <= ?
+         AND (endDate IS NULL OR endDate >= ?)
          ORDER BY time ASC`,
         [dateString, dateString]
       );

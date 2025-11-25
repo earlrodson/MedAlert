@@ -15,30 +15,7 @@ import {
   DATABASE_ERROR_CODES
 } from './database-types';
 import { platformStorage } from './platform-storage';
-
-/**
- * Enhanced DatabaseError with additional context
- */
-class EnhancedDatabaseError extends Error implements DatabaseError {
-  public readonly code: string;
-  public readonly details?: any;
-  public readonly timestamp: string;
-  public readonly operation: string;
-
-  constructor(
-    code: typeof DATABASE_ERROR_CODES[keyof typeof DATABASE_ERROR_CODES],
-    message: string,
-    operation: string,
-    details?: any
-  ) {
-    super(message);
-    this.name = 'DatabaseError';
-    this.code = code;
-    this.details = details;
-    this.timestamp = new Date().toISOString();
-    this.operation = operation;
-  }
-}
+import { DatabaseErrorHandler, DatabaseValidator, EnhancedDatabaseError } from './database-error-handling';
 
 /**
  * Database wrapper with comprehensive error handling and logging
@@ -59,12 +36,18 @@ export class DatabaseWrapper {
   async init(): Promise<DatabaseResult<void>> {
     try {
       if (this.initialized) {
+        console.log('🗄️ Database already initialized');
         return { success: true };
       }
+
+      console.log('🗄️ Starting database initialization...');
+      console.log('📱 Platform detected:', typeof window !== 'undefined' ? 'web' : 'native');
 
       const result = await this.adapter.init();
 
       if (!result.success) {
+        console.error('❌ Database initialization failed:', result.error);
+        console.error('🔍 Error details:', JSON.stringify(result.error, null, 2));
         throw new EnhancedDatabaseError(
           result.error?.code || DATABASE_ERROR_CODES.INIT_FAILED,
           result.error?.message || 'Database initialization failed',
@@ -74,10 +57,12 @@ export class DatabaseWrapper {
       }
 
       this.initialized = true;
-      console.log('Database initialized successfully');
+      console.log('✅ Database initialized successfully');
+      console.log('🔧 Adapter type:', this.adapter.constructor.name);
       return { success: true };
     } catch (error) {
       const dbError = this.handleError(error, 'init');
+      console.error('💥 Database initialization error:', dbError);
       return { success: false, error: dbError };
     }
   }
@@ -180,60 +165,10 @@ export class DatabaseWrapper {
   }
 
   /**
-   * Input validation for medication data
+   * Input validation for medication data (using standardized validator)
    */
   private validateMedicationInput(medication: NewMedication): DatabaseError | null {
-    if (!medication.name?.trim()) {
-      return new EnhancedDatabaseError(
-        DATABASE_ERROR_CODES.INVALID_INPUT,
-        'Medication name is required',
-        'validateMedicationInput'
-      );
-    }
-
-    if (!medication.dosage?.trim()) {
-      return new EnhancedDatabaseError(
-        DATABASE_ERROR_CODES.INVALID_INPUT,
-        'Medication dosage is required',
-        'validateMedicationInput'
-      );
-    }
-
-    if (!medication.frequency?.trim()) {
-      return new EnhancedDatabaseError(
-        DATABASE_ERROR_CODES.INVALID_INPUT,
-        'Medication frequency is required',
-        'validateMedicationInput'
-      );
-    }
-
-    if (!medication.time?.trim()) {
-      return new EnhancedDatabaseError(
-        DATABASE_ERROR_CODES.INVALID_INPUT,
-        'Medication time is required',
-        'validateMedicationInput'
-      );
-    }
-
-    if (!medication.startDate?.trim()) {
-      return new EnhancedDatabaseError(
-        DATABASE_ERROR_CODES.INVALID_INPUT,
-        'Medication start date is required',
-        'validateMedicationInput'
-      );
-    }
-
-    // Validate time format (HH:MM)
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(medication.time)) {
-      return new EnhancedDatabaseError(
-        DATABASE_ERROR_CODES.INVALID_INPUT,
-        'Invalid time format. Use HH:MM format.',
-        'validateMedicationInput'
-      );
-    }
-
-    return null;
+    return DatabaseValidator.validateMedicationInput(medication, 'addMedication');
   }
 
   /**
@@ -648,6 +583,3 @@ export class DatabaseWrapper {
 
 // Export singleton instance for use throughout the app
 export const database = new DatabaseWrapper();
-
-// Export for testing
-export { DatabaseWrapper };

@@ -1,12 +1,13 @@
 module.exports = {
-  preset: 'react-native',
+  testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/test-setup.js'],
   testMatch: [
     '**/__tests__/**/*.(js|jsx|ts|tsx)',
     '**/*.(test|spec).(js|jsx|ts|tsx)'
   ],
   collectCoverageFrom: [
-    '**/*.{js,jsx,ts,tsx}',
+    'lib/**/*.{js,jsx,ts,tsx}',
+    'components/**/*.{js,jsx,ts,tsx}',
     '!**/coverage/**',
     '!**/node_modules/**',
     '!**/babel.config.js',
@@ -14,15 +15,16 @@ module.exports = {
     '!**/test-setup.js',
     '!**/metro.config.js'
   ],
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)'
-  ],
   moduleNameMapper: {
     '^~/(.*)$': '<rootDir>/$1',
     '^@/(.*)$': '<rootDir>/$1'
   },
-  testEnvironment: 'node',
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: './babel.config.js' }],
   },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  maxWorkers: 1,
+  transformIgnorePatterns: [
+    'node_modules/(?!(@react-native|react-native|expo|@expo|react-native-web|@rn-primitives|lucide-react-native|react-native-css-interop|nativewind)/)'
+  ],
 };

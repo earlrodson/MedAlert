@@ -14,13 +14,14 @@ import {
   NewMedicationStatus,
   MedicationWithStatus,
   DatabaseError,
-  DATABASE_ERROR_CODES,
   QueryOptions,
   SeedMedication,
   DEVELOPMENT_SEED_DATA,
-  SHOULD_SEED_DATA
+  SHOULD_SEED_DATA,
+  DATABASE_ERROR_CODES
 } from './database-types';
 import { logger } from './error-handling';
+import { DatabaseErrorHandler, DatabaseValidator } from './database-error-handling';
 
 // Import native SQLite adapter (will be loaded only on native platforms)
 let NativeSQLiteAdapter: typeof SQLiteNativeAdapter | null = null;
@@ -38,38 +39,7 @@ const getNativeAdapter = (): typeof SQLiteNativeAdapter | null => {
   return NativeSQLiteAdapter;
 };
 
-/**
- * Base error handling utilities
- */
-class DatabaseErrorHandler {
-  static createError(
-    code: typeof DATABASE_ERROR_CODES[keyof typeof DATABASE_ERROR_CODES],
-    message: string,
-    details?: any
-  ): DatabaseError {
-    return { code, message, details };
-  }
-
-  static handleError(error: any, context: string): DatabaseError {
-    if (error && typeof error === 'object' && 'code' in error) {
-      return error as DatabaseError;
-    }
-
-    // Handle different error types
-    if (error instanceof Error) {
-      return this.createError(
-        DATABASE_ERROR_CODES.QUERY_FAILED,
-        `${context}: ${error.message}`,
-        { stack: error.stack }
-      );
-    }
-
-    return this.createError(
-      DATABASE_ERROR_CODES.QUERY_FAILED,
-      `${context}: ${String(error)}`
-    );
-  }
-}
+// Error handling utilities now imported from './database-error-handling'
 
 /**
  * Promise timeout utility
@@ -386,10 +356,15 @@ class WebStorageAdapter implements DatabaseAdapter {
         const now = new Date().toISOString();
         const today = new Date().toISOString().split('T')[0];
 
+        // Use historical start date (1 month ago) to ensure medications appear for today's date
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        const startDate = oneMonthAgo.toISOString().split('T')[0];
+
         const medicationsWithDates: MedicationRecord[] = DEVELOPMENT_SEED_DATA.map((med, index) => ({
           ...med,
           id: index + 1,
-          startDate: today,
+          startDate: startDate,
           endDate: null,
           createdAt: now,
           updatedAt: now,

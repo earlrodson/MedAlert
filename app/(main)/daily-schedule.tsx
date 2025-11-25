@@ -3,12 +3,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { format, parseISO } from 'date-fns';
 import { Pill, ChevronLeft, Check, Clock } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { database } from '@/lib/database-wrapper';
+import { useMedicationStatus } from '@/lib/medication-status-provider';
 import { MedicationRecord, MedicationStatus, MedicationWithStatus } from '@/lib/database-types';
 
 export default function DailySchedule() {
     const router = useRouter();
     const { date } = useLocalSearchParams<{ date: string }>();
+    const { allMedications, markAsTaken, isLoading: isLoadingMedications } = useMedicationStatus();
     const [medications, setMedications] = useState<MedicationWithStatus[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -42,62 +43,99 @@ export default function DailySchedule() {
 
     const handleTakeMedication = async (medicationId: number) => {
         try {
-            const dateString = selectedDate.toISOString().split('T')[0];
+            console.log('🎯 Marking medication as taken:', medicationId);
 
-            // Initialize database if not already done
-            const initResult = await database.init();
-            if (!initResult.success) {
-                console.error('Database initialization failed:', initResult.error);
-                Alert.alert('Database Error', 'Failed to initialize medication storage.');
-                return;
-            }
+            // Find the medication to get its string ID
+            const medication = medications.find(med => med.id === medicationId);
+            const stringMedicationId = medication?.id?.toString() || medicationId.toString();
 
-            const updateResult = await database.updateMedicationStatus(medicationId, dateString, true);
+            await markAsTaken(stringMedicationId);
 
-            if (updateResult.success) {
-                // Reload medications to update the UI
-                loadMedications();
-                Alert.alert('Success', 'Medication marked as taken!');
-            } else {
-                console.error('Failed to update medication status:', updateResult.error);
-                Alert.alert('Error', 'Failed to update medication status');
-            }
+            // Filter medications to show updated state
+            const updatedMedications = medications.map(med =>
+                med.id === medicationId
+                    ? { ...med, status: { taken: true, takenAt: new Date().toISOString() } }
+                    : med
+            );
+
+            setMedications(updatedMedications);
+            Alert.alert('Success', 'Medication marked as taken!');
         } catch (error) {
             console.error('Unexpected error updating medication status:', error);
             Alert.alert('Error', 'An unexpected error occurred while updating medication status');
         }
     };
 
-    const loadMedications = async () => {
+    const loadMedications = () => {
         try {
             setIsLoading(true);
 
-            // Initialize database if not already done
-            const initResult = await database.init();
-            if (!initResult.success) {
-                console.error('Database initialization failed:', initResult.error);
-                Alert.alert('Database Error', 'Failed to initialize medication storage.');
-                return;
-            }
+            // Debug logging - Start
+            console.log('🔍 Daily Schedule Debug: Loading medications');
+            console.log('📅 Selected Date:', selectedDate.toISOString());
+            console.log('📅 Is Today:', isToday);
+            console.log('📱 Platform:', typeof window !== 'undefined' ? 'web' : 'native');
+            console.log('🗄️ Using MedicationStatusProvider with', allMedications.length, 'total medications');
 
-            const medsResult = await database.getMedicationsWithStatusForDate(selectedDate);
-            if (medsResult.success) {
-                setMedications(medsResult.data || []);
-            } else {
-                console.error('Failed to load medications:', medsResult.error);
-                Alert.alert('Error', 'Failed to load medications for this date.');
-            }
+            const dateString = selectedDate.toISOString().split('T')[0];
+            console.log('🔍 Filtering medications for date:', dateString);
+
+            // Filter medications for the selected date from global state
+            const filteredMedications = allMedications.filter(med => {
+                const medDate = med.scheduledTime ?
+                    new Date(med.scheduledTime).toISOString().split('T')[0] :
+                    new Date().toISOString().split('T')[0];
+
+                return medDate === dateString;
+            });
+
+            // Convert to MedicationWithStatus format for compatibility
+            const medicationWithStatus: MedicationWithStatus[] = filteredMedications.map(med => ({
+                id: med.id ? parseInt(med.id) : 0,
+                name: med.medicationName || 'Unknown Medication',
+                dosage: med.dosage || 'Unknown Dosage',
+                frequency: med.frequency || 'Unknown Frequency',
+                time: med.scheduledTime ? new Date(med.scheduledTime).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }) : 'Unknown Time',
+                instructions: med.instructions || '',
+                startDate: med.startDate || new Date().toISOString().split('T')[0],
+                endDate: med.endDate || null,
+                createdAt: med.createdAt || new Date().toISOString(),
+                updatedAt: med.updatedAt || new Date().toISOString(),
+                status: {
+                    taken: med.taken || false,
+                    takenAt: med.takenAt || null
+                }
+            }));
+
+            console.log('✅ Medications loaded successfully');
+            console.log('📊 Medication count:', medicationWithStatus.length);
+            console.log('💊 Medications:', medicationWithStatus.map(med => ({
+                id: med.id,
+                name: med.name,
+                time: med.time,
+                startDate: med.startDate,
+                endDate: med.endDate,
+                status: med.status
+            })));
+
+            setMedications(medicationWithStatus);
         } catch (error) {
-            console.error('Unexpected error loading medications:', error);
+            console.error('❌ Unexpected error loading medications:', error);
+            console.error('🔍 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
             Alert.alert('Error', 'An unexpected error occurred while loading medications.');
         } finally {
             setIsLoading(false);
+            console.log('🏁 Load medications completed');
         }
     };
 
     useEffect(() => {
         loadMedications();
-    }, [date]);
+    }, [date, allMedications]);
 
     return (
         <View className="flex-1 bg-background">

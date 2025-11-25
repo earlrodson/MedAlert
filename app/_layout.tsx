@@ -81,14 +81,6 @@ function Routes() {
     return (
         <Stack screenOptions={stackScreenOptions}>
             <Stack.Screen name="(main)" options={{ headerShown: false }} />
-            <Stack.Screen
-                name="daily-schedule"
-                options={{
-                    headerShown: false,
-                    animation: 'slide_from_right',
-                    presentation: 'card',
-                }}
-            />
             <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
             <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
             <Stack.Screen name="(auth)/reset-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />

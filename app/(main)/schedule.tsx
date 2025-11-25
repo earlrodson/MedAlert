@@ -2,11 +2,11 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { useState, useMemo, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, isPast } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, isPast, isBefore, startOfDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Badge } from '@/components/ui/badge';
-import { database } from '@/lib/database-wrapper';
+import { useMedicationStatus } from '@/lib/medication-status-provider';
 import { THEME } from '@/lib/theme';
 
 export default function ScheduleScreen() {
@@ -14,7 +14,7 @@ export default function ScheduleScreen() {
     const [currentDate, setCurrentDate] = useState(today);
     const [selectedDate, setSelectedDate] = useState(today);
     const [medicationCounts, setMedicationCounts] = useState<Record<string, number>>({});
-    const [isLoadingCounts, setIsLoadingCounts] = useState(false);
+    const { allMedications, isLoading: isLoadingMedications } = useMedicationStatus();
 
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
@@ -65,51 +65,43 @@ export default function ScheduleScreen() {
         }
     };
 
-    // Fetch medication counts for all days in the current month
-    const fetchMedicationCounts = async (days: (Date | null)[]) => {
-        setIsLoadingCounts(true);
-        try {
-            const counts: Record<string, number> = {};
+    // Calculate medication counts from global state data
+    const calculateMedicationCounts = (days: (Date | null)[]) => {
+        const counts: Record<string, number> = {};
 
-            // Create an array of promises for fetching medication counts
-            const countPromises = days
-                .filter(day => day !== null && isSameMonth(day, currentDate))
-                .map(async (day) => {
-                    const dateString = format(day!, 'yyyy-MM-dd');
-                    try {
-                        const result = await database.getMedicationsByDate(day!);
-                        if (result.success && result.data) {
-                            return { dateString, count: result.data.length };
-                        } else {
-                            console.error(`Failed to fetch medications for ${dateString}:`, result.error?.message);
-                            return { dateString, count: 0 };
-                        }
-                    } catch (error) {
-                        console.error(`Failed to fetch medications for ${dateString}:`, error);
-                        return { dateString, count: 0 };
-                    }
-                });
+        // Filter days for current month
+        const daysToProcess = days.filter(day => day !== null && isSameMonth(day, currentDate));
+        console.log('🔍 Calculating medication counts for days:',
+            daysToProcess.map(d => format(d!, 'yyyy-MM-dd'))
+        );
 
-            // Wait for all count requests to complete
-            const results = await Promise.all(countPromises);
+        // Calculate untaken medication counts for each day
+        daysToProcess.forEach(day => {
+            const dateString = format(day!, 'yyyy-MM-dd');
 
-            // Convert results to record
-            results.forEach(({ dateString, count }) => {
-                counts[dateString] = count;
+            // Filter medications for this date that haven't been taken
+            const untakenMeds = allMedications.filter(med => {
+                const medDate = med.scheduledTime ?
+                    new Date(med.scheduledTime).toISOString().split('T')[0] :
+                    new Date().toISOString().split('T')[0];
+
+                return medDate === dateString && !med.taken;
             });
 
-            setMedicationCounts(counts);
-        } catch (error) {
-            console.error('Error fetching medication counts:', error);
-        } finally {
-            setIsLoadingCounts(false);
-        }
+            counts[dateString] = untakenMeds.length;
+            console.log(`✅ Medications for ${dateString}: ${untakenMeds.length} untaken`);
+        });
+
+        console.log('📊 Final untaken medication counts:', counts);
+        setMedicationCounts(counts);
     };
 
-    // Fetch counts when month changes
+    // Calculate counts when month changes or medications update
     useEffect(() => {
-        fetchMedicationCounts(daysInMonth);
-    }, [currentDate]);
+        if (!isLoadingMedications && allMedications.length > 0) {
+            calculateMedicationCounts(daysInMonth);
+        }
+    }, [currentDate, allMedications, isLoadingMedications]);
 
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -155,9 +147,18 @@ export default function ScheduleScreen() {
                             const dayNumber = day ? format(day, 'd') : '';
                             const isCurrentMonth = day ? isSameMonth(day, currentDate) : false;
                             const isCurrentDay = day ? isToday(day) : false;
-                            const isPastDate = day ? isPast(day) : false;
+                            const isPastDate = day ? isBefore(day, startOfDay(new Date())) : false;
                             const dateString = day ? format(day, 'yyyy-MM-dd') : '';
                             const medicationCount = day ? (medicationCounts[dateString] || 0) : 0;
+
+                            // Debug logging for date classification
+                            console.log('📅 Date Debug:', {
+                                date: dateString,
+                                isCurrentDay,
+                                isPastDate,
+                                untakenMedicationCount: medicationCount,
+                                shouldShowBadge: medicationCount > 0 && (!isPastDate || isCurrentDay)
+                            });
 
                             return (
                                 <View style={styles.dayCell}>
@@ -189,7 +190,7 @@ export default function ScheduleScreen() {
                                                 </Text>
 
                                                 {/* Red floating badge for medication counts */}
-                                                {medicationCount > 0 && !isPastDate && (
+                                                {medicationCount > 0 && (!isPastDate || isCurrentDay) && (
                                                     <View style={styles.badgeContainer}>
                                                         <Badge
                                                             variant="destructive"
@@ -295,8 +296,8 @@ const styles = StyleSheet.create({
     // Badge styles
     badgeContainer: {
         position: 'absolute',
-        top: -2,
-        right: -2,
+        top: -8,
+        right: -10,
         zIndex: 10,
         shadowColor: '#000',
         shadowOffset: {
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     medicationBadge: {
-        minWidth: 18,
+        minWidth: 10,
         height: 18,
         borderRadius: 9,
         paddingHorizontal: 4,
